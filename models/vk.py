@@ -85,6 +85,7 @@ def iterative_asset_value(
 
     for i in range(max_iter):
         V_old = V
+        sigma_V_old = sigma_V
 
         # Black-Scholes d1, d2
         d1 = (np.log(V / D) + (r + 0.5 * sigma_V ** 2) * T) / (sigma_V * sqrt_T)
@@ -109,8 +110,8 @@ def iterative_asset_value(
 
         sigma_V = sigma_E * E / (V * N_d1)
 
-        # Step 5 — convergence check
-        if abs(V - V_old) < tol:
+        # Step 5 — convergence check (both V and sigma_V)
+        if abs(V - V_old) < tol and abs(sigma_V - sigma_V_old) < tol:
             logger.debug("VK iteration converged in %d steps", i + 1)
             return float(V), float(sigma_V)
 
