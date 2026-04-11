@@ -78,6 +78,10 @@ def fetch_balance_sheet(tickers: list[str]) -> pd.DataFrame:
             # Infer missing debt components when possible
             if np.isnan(total_debt) and not (np.isnan(short_term) and np.isnan(long_term)):
                 total_debt = np.nansum([short_term, long_term])
+            # Guard: if total_debt ended up as 0 (e.g. both components were NaN),
+            # treat it as missing so merge.py dropna() filters it out.
+            if total_debt == 0:
+                total_debt = np.nan
             if np.isnan(short_term) and not np.isnan(total_debt) and not np.isnan(long_term):
                 short_term = total_debt - long_term
             if np.isnan(long_term) and not np.isnan(total_debt) and not np.isnan(short_term):

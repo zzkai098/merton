@@ -229,6 +229,10 @@ def run_vk(panel_df: pd.DataFrame) -> pd.DataFrame:
             dp = float(row["default_point"])
             r = float(row["risk_free_rate"])
 
+            # Fallback: use total_debt when default_point is missing
+            if np.isnan(dp):
+                dp = float(row["total_debt"])
+
             if E <= 0 or sigma_E <= 0 or dp <= 0:
                 raise ValueError("Non-positive input value")
 
