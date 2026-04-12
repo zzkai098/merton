@@ -111,7 +111,7 @@ def iterative_asset_value(
         sigma_V = sigma_E * E / (V * N_d1)
 
         # Step 5 — convergence check (both V and sigma_V)
-        if abs(V - V_old) < tol and abs(sigma_V - sigma_V_old) < tol:
+        if abs(V - V_old) / V_old < tol and abs(sigma_V - sigma_V_old) / sigma_V_old < tol:
             logger.debug("VK iteration converged in %d steps", i + 1)
             return float(V), float(sigma_V)
 
@@ -234,7 +234,7 @@ def run_vk(panel_df: pd.DataFrame) -> pd.DataFrame:
             if np.isnan(dp):
                 dp = float(row["total_debt"])
 
-            if E <= 0 or sigma_E <= 0 or dp <= 0:
+            if np.isnan(dp) or E <= 0 or sigma_E <= 0 or dp <= 0:
                 raise ValueError("Non-positive input value")
 
             V, sigma_V = iterative_asset_value(E, sigma_E, dp, r, T)
