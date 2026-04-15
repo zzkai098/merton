@@ -52,32 +52,29 @@ DEFAULT_FIRMS = [
     # Formal bankruptcy (Chapter 11)
     ("HTZ",   "Hertz",              "2020-05-22"),   # Ch.11 May 2020
     # Going-concern / severe operational distress
-    ("PLUG",  "Plug Power",         "2023-12-31"),   # Going-concern warning
-    ("FCEL",  "FuelCell Energy",    "2023-12-31"),   # Going-concern warning, persistent losses
-    # removed NKLA — no balance sheet on yfinance
+    ("PLUG",  "Plug Power",         "2023-11-09"),   # 10-Q going-concern warning
+    ("FCEL",  "FuelCell Energy",    "2023-12-19"),   # FY2023 10-K going-concern
     # Severe financial distress — cash burn / pre-profit
-    ("LCID",  "Lucid Group",        "2023-12-31"),   # Cash burn, high leverage
-    ("RIVN",  "Rivian",             "2023-12-31"),   # Cash burn, pre-profit
-    ("SPCE",  "Virgin Galactic",    "2023-12-31"),   # Cash burn, no revenue
-    ("WKHS",  "Workhorse Group",    "2023-12-31"),   # Near-zero revenue, distressed
-    # removed LAZR — no yfinance data
-    ("QS",    "QuantumScape",       "2023-12-31"),   # Pre-revenue, cash burn
-    ("BLNK",  "Blink Charging",    "2023-12-31"),   # Persistent losses
+    ("LCID",  "Lucid Group",        "2025-02-25"),   # FY2024 10-K severe cash burn
+    ("RIVN",  "Rivian",             "2022-05-11"),   # Q1 2022 quarterly loss $1.6B
+    ("SPCE",  "Virgin Galactic",    "2025-02-26"),   # FY2024 10-K first going-concern
+    ("WKHS",  "Workhorse Group",    "2024-03-12"),   # FY2023 10-K first going-concern
+    ("QS",    "QuantumScape",       "2025-02-26"),   # Cash runway ~11 months
+    ("BLNK",  "Blink Charging",    "2025-04-09"),   # FY2024 10-K going-concern
     # Severe financial distress — revenue decline / negative equity
-    ("AMC",   "AMC Entertain.",     "2023-12-31"),   # Negative equity, high debt
-    ("BYND",  "Beyond Meat",        "2023-12-31"),   # Revenue decline, distressed
-    ("TLRY",  "Tilray Brands",      "2023-12-31"),   # Persistent losses
-    ("CLOV",  "Clover Health",      "2023-12-31"),   # Persistent losses
-    # removed WISH — no yfinance data
-    ("PTON",  "Peloton",            "2023-12-31"),   # Revenue decline, cash burn
-    ("W",     "Wayfair",            "2023-12-31"),   # Persistent losses, high debt
-    ("OPEN",  "Opendoor Tech",      "2023-12-31"),   # Massive losses
-    ("SKLZ",  "Skillz",             "2023-12-31"),   # Revenue collapse
-    ("LMND",  "Lemonade",           "2023-12-31"),   # Persistent losses
-    # removed RIDE, SWN — no yfinance data
-    ("RIG",   "Transocean",         "2023-12-31"),   # High leverage, persistent losses
-    ("CLF",   "Cleveland-Cliffs",   "2023-12-31"),   # Cyclical distress, high leverage
-    ("AAL",   "American Airlines",  "2023-12-31"),   # Negative equity, high debt
+    ("AMC",   "AMC Entertain.",     "2020-06-30"),   # Q2 2020 equity turned negative
+    ("BYND",  "Beyond Meat",        "2022-06-30"),   # Q2 2022 first YoY revenue decline
+    ("TLRY",  "Tilray Brands",      "2021-05-03"),   # Post-merger persistent losses
+    ("CLOV",  "Clover Health",      "2021-01-07"),   # SPAC close, never profitable
+    ("PTON",  "Peloton",            "2022-01-20"),   # Revenue decline, CEO replaced
+    ("W",     "Wayfair",            "2019-09-30"),   # Q3 2019 equity turned negative
+    ("OPEN",  "Opendoor Tech",      "2022-09-30"),   # Q3 2022 massive loss $928M
+    ("SKLZ",  "Skillz",             "2022-03-31"),   # Q1 2022 revenue collapse began
+    ("LMND",  "Lemonade",           "2020-07-02"),   # IPO with cumulative loss $250M
+    # High leverage / cyclical distress
+    ("RIG",   "Transocean",         "2015-12-31"),   # 2015 oil crash, net loss $3.1B
+    ("CLF",   "Cleveland-Cliffs",   "2020-06-30"),   # Q2 2020 pandemic losses
+    ("AAL",   "American Airlines",  "2020-03-31"),   # Q1 2020 equity turned negative
 ]
 
 DEFAULT_TICKERS = [t[0] for t in DEFAULT_FIRMS]

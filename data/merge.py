@@ -119,7 +119,15 @@ def build_panel(
     # ------------------------------------------------------------------
     # 6. Derived columns
     # ------------------------------------------------------------------
-    panel["default_label"] = panel["ticker"].isin(config.DEFAULT_TICKERS).astype(int)
+    # Default label: 1 only from the distress year onward, 0 before
+    default_year = {
+        t[0]: pd.to_datetime(t[2]).year for t in config.DEFAULT_FIRMS
+    }
+    panel["default_label"] = panel.apply(
+        lambda row: 1 if row["ticker"] in default_year
+        and row["year"] >= default_year[row["ticker"]] else 0,
+        axis=1,
+    )
 
     panel["leverage_ratio"] = panel["total_debt"] / (
         panel["market_cap"] + panel["total_debt"]
