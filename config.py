@@ -88,6 +88,8 @@ RISK_FREE_SERIES = "DGS1"       # FRED 1-Year Treasury Constant Maturity
 T = 1.0                         # Default horizon in years
 TRADING_DAYS = 252              # Annualization factor
 VOL_WINDOW = 252                # Rolling window for equity vol estimation
+USE_IMPLIED_VOL = True          # Use option-implied vol for σ_E (fallback: historical)
+IMPLIED_VOL_TARGET_TENOR = 1.0  # Target option tenor in years for implied vol
 RECOVERY_RATE = 0.4             # LGD = 1 - recovery (standard assumption)
 
 # ── Output ────────────────────────────────────────────────────

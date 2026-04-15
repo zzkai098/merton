@@ -10,6 +10,7 @@ import config
 from data.equity import fetch_equity_data
 from data.balance_sheet import fetch_balance_sheet
 from data.risk_free import fetch_risk_free_rate
+from data.implied_vol import load_implied_vol
 
 logger = logging.getLogger(__name__)
 
@@ -59,6 +60,31 @@ def build_panel(
         .groupby(["ticker", "year"], as_index=False)
         .last()
     )
+
+    # ------------------------------------------------------------------
+    # 2b. Overlay implied volatility from OptionMetrics (if enabled)
+    # ------------------------------------------------------------------
+    if getattr(config, "USE_IMPLIED_VOL", False):
+        logger.info("Loading implied volatility from OptionMetrics CSV …")
+        iv_df = load_implied_vol()
+        if not iv_df.empty:
+            equity_annual = equity_annual.merge(
+                iv_df[["ticker", "year", "implied_vol"]],
+                on=["ticker", "year"],
+                how="left",
+            )
+            # Use implied vol where available; fall back to historical vol
+            equity_annual["equity_vol"] = (
+                equity_annual["implied_vol"]
+                .fillna(equity_annual["equity_vol"])
+            )
+            n_total = len(equity_annual)
+            n_implied = equity_annual["implied_vol"].notna().sum()
+            logger.info(
+                "Implied vol applied to %d / %d firm-year rows. Rest use historical vol.",
+                n_implied, n_total,
+            )
+            equity_annual = equity_annual.drop(columns=["implied_vol"])
 
     # ------------------------------------------------------------------
     # 3. Balance sheet: assign fiscal year
