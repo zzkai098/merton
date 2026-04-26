@@ -21,7 +21,7 @@ Filtering logic:
     4. Keep only tenor = '5Y' (most liquid; fallback from 1Y if needed)
     5. Keep only tier = 'SNRFOR' (Senior Foreign, most standard)
     6. Keep only currency = 'USD'
-    7. Keep only region = 'N.Amer'
+    7. Keep only region = 'North America'
     8. Keep only parspread > 0 and not null
     9. One row per ticker-year
 """
@@ -168,7 +168,7 @@ def filter_cds(df: pd.DataFrame) -> pd.DataFrame:
     if "region" in df.columns:
         df["region"] = df["region"].astype(str).str.strip()
         df = df[df["region"].str.contains("N.Amer", case=False, na=False)]
-        print(f"After region=N.Amer filter: {len(df):,} rows")
+        print(f"After region=North America filter: {len(df):,} rows")
 
     # ── 5. parspread quality filter ──
     df = df[df["parspread"].notna() & (df["parspread"] > 0)]
