@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Credit risk model comparison: Merton (1974) structural model, Vasicek-Kealhofer (VK/KMV) structural model, and Hull-White reduced-form intensity model. Evaluates default discrimination ability using ROC/AUC and CAP/AR metrics on U.S. listed firms.
+Credit risk model comparison: Merton (1974) structural, Vasicek-Kealhofer (VK/KMV) structural, and Hull-White (2000) reduced-form intensity. The Hull-White hazard is bootstrapped directly from 5Y Markit CDS par spreads (not a logistic-regression proxy), with seniority-weighted firm-specific recovery rate (Altman & Kishore, 1996). Two evaluations on a 2021–2025 U.S. listed-firm panel: (i) structural discrimination on a 163-firm labelled panel (659 firm-years, 21 distressed) scored by ROC-AUC / CAP-AR; (ii) CDS market calibration on an 84-firm IG subset (398 firm-years) using λ_market and EL benchmarks, plus walk-forward linear calibration (Task A-2), cross-sectional Spearman vs CDS hazard (Task B), and Spearman vs agency ratings (Task C). The canonical deliverable is `report/Grp03_mf728_report.pdf`.
 
 ## Commands
 
@@ -14,42 +14,56 @@ pip install -e .
 # or
 pip install numpy scipy pandas yfinance fredapi matplotlib scikit-learn openpyxl jupyter
 
-# Run the full pipeline (from project root)
+# Run the full analysis (loads cached panel_data.csv + cds_parspread.csv)
 jupyter notebook notebooks/main.ipynb
 
-# Run individual modules from project root
-python -c "from data import build_panel; build_panel()"
-python -c "from models import run_merton; import pandas as pd; run_merton(pd.read_csv('output/panel_data.csv'))"
+# Rebuild raw inputs (only when source data changes)
+python src/scripts/filter_optionmetrics.py <raw_zip> data_raw/iv_YYYY.csv
+python src/scripts/filter_optionmetrics.py --merge      # combine yearly IV files
+python src/scripts/filter_cds.py                        # filter Markit dump → data_raw/cds_parspread.csv
+
+# Rebuild the merged panel from yfinance + FRED + filtered IV
+PYTHONPATH=src python -c "from data import build_panel; build_panel()"
 ```
 
 ## Architecture
 
 ```
-config.py          — All configuration: ticker lists, time window, FRED API key, model parameters
-data/              — Data acquisition from yfinance + FRED
-  equity.py        — Stock prices, market cap, equity volatility (σ_E)
-  balance_sheet.py — Debt structure from yfinance financials
-  risk_free.py     — Treasury rates from FRED (fallback: yfinance ^TNX)
-  merge.py         — Builds firm-level annual panel, adds default labels
-models/            — Three credit risk model implementations
-  merton.py        — Merton: scipy.optimize.fsolve for (V, σ_V), then DD → PD
-  vk.py            — VK/KMV: iterative asset value estimation, default_point = STD + 0.5×LTD
-  hull_white.py    — Reduced-form: logistic regression hazard proxy (no CDS data)
-analysis/          — Evaluation and visualization
-  discrimination.py — ROC/AUC, CAP/AR computation, model comparison report
-  visualization.py  — ROC curves, CAP curves, DD distributions, PD scatter plots
-notebooks/main.ipynb — End-to-end pipeline notebook
-output/            — Generated CSV files and PNG charts
+src/                       — Python package (added to sys.path by the notebook)
+  config.py                — Tickers, sample window, model parameters. FRED_API_KEY from env.
+  data/                    — Live data acquisition modules (rebuild panel_data.csv)
+    equity.py              — Stock prices, market cap, equity volatility (σ_E)
+    balance_sheet.py       — Debt structure from yfinance financials
+    risk_free.py           — Treasury rates from FRED (fallback: yfinance ^TNX)
+    implied_vol.py         — Loads OptionMetrics implied vol from data_raw/
+    merge.py               — Builds firm-level annual panel + default labels
+  models/                  — Three credit risk model implementations
+    merton.py              — Merton: scipy.optimize.fsolve for (V, σ_V) → DD → PD
+    vk.py                  — VK/KMV: iterative asset value, DP = STD + 0.5×LTD
+    hull_white.py          — Reduced-form: λ bootstrapped from 5Y CDS spreads (Hull & White, 2000); seniority-weighted RR (Altman & Kishore, 1996)
+  analysis/                — Evaluation and visualization
+    discrimination.py      — ROC/AUC, CAP/AR computation, model comparison
+    visualization.py       — ROC curves, CAP curves, DD distributions, PD scatter
+  scripts/                 — One-off raw-data preprocessing
+    filter_cds.py          — Markit CDS dump → data_raw/cds_parspread.csv
+    filter_optionmetrics.py — OptionMetrics opprcd → data_raw/iv_YYYY.csv → merge
+data_raw/                  — Filtered raw inputs (CDS spreads, OptionMetrics IV)
+notebooks/main.ipynb       — End-to-end analysis pipeline
+output/                    — Generated CSV files and PNG charts
+  cds_calibration/         — Task A/B/C outputs (level matching, rank, rating benchmark)
+docs/                      — Project proposal and reference PDFs
+report/                    — Slides and written report (gitignored)
 ```
 
 ## Key Conventions
 
-- All modules use `import config` for project-wide parameters (run from project root)
-- Each model's `run_*()` function takes a panel DataFrame and returns it with added columns (e.g., `merton_DD`, `merton_PD`)
-- Default label: `default_label` column (1 = defaulted, 0 = non-defaulted)
-- Model output columns follow pattern: `{model}_{metric}` (e.g., `vk_DD`, `hw_PD`)
+- All modules use `import config` for project-wide parameters; `src/` must be on `sys.path` (notebook handles this; for scripts use `PYTHONPATH=src` or `pip install -e .`)
+- Each model's `run_*()` function takes a panel DataFrame and returns it with added columns (e.g., `merton_DD`, `merton_PD`, `hw_lambda`)
+- Default label: `default_label` column (1 = distressed, 0 = non-default)
+- Model output columns follow pattern: `{model}_{metric}` (e.g., `vk_DD`, `hw_PD_5Y`)
+- Raw inputs live in `data_raw/`; merged panel in `output/panel_data.csv`; analysis outputs in `output/` and `output/cds_calibration/`
 
 ## Setup Required
 
-1. Set your FRED API key in `config.py` (`FRED_API_KEY = "your_key_here"`)
-2. If FRED key is unavailable, the system auto-falls back to yfinance ^TNX for risk-free rates
+1. Set `FRED_API_KEY` as an environment variable (only needed when rebuilding the risk-free series). If unset, the system auto-falls back to yfinance `^TNX`.
+2. Place filtered raw inputs in `data_raw/` (`cds_parspread.csv`, `implied_vol_optionmetrics.csv`). The notebook does not regenerate these.

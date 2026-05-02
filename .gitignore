@@ -16,5 +16,9 @@ venv/
 
 # Claude
 .claude/
-fi_v0.pdf
-fi_v0.pdf
+
+# Local memo
+memory/
+
+# Report drafts (delivered separately, not version-controlled)
+report/
