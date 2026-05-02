@@ -11,7 +11,7 @@ import config
 logger = logging.getLogger(__name__)
 
 # Expected CSV path
-_DEFAULT_IV_PATH = os.path.join("data", "implied_vol_optionmetrics.csv")
+_DEFAULT_IV_PATH = os.path.join("data_raw", "implied_vol_optionmetrics.csv")
 
 
 def load_implied_vol(path: str | None = None) -> pd.DataFrame:
@@ -23,7 +23,7 @@ def load_implied_vol(path: str | None = None) -> pd.DataFrame:
     Parameters
     ----------
     path : str | None
-        Path to the CSV file.  Defaults to ``data/implied_vol_optionmetrics.csv``.
+        Path to the CSV file.  Defaults to ``data_raw/implied_vol_optionmetrics.csv``.
 
     Returns
     -------

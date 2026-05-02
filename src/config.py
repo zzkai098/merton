@@ -3,8 +3,11 @@ Project configuration: sample firms, time window, API keys, model parameters.
 """
 
 # ── FRED API Key ──────────────────────────────────────────────
+# Set the FRED_API_KEY environment variable.
 # Get yours at: https://fred.stlouisfed.org/docs/api/api_key.html
-FRED_API_KEY = "672877af8d722519f7cbcd5f8c666532"
+# If unset, risk_free.py falls back to yfinance ^TNX.
+import os
+FRED_API_KEY = os.environ.get("FRED_API_KEY", "")
 
 # ── Time Window ───────────────────────────────────────────────
 START_DATE = "2020-01-01"
@@ -87,7 +90,16 @@ TRADING_DAYS = 252              # Annualization factor
 VOL_WINDOW = 252                # Rolling window for equity vol estimation
 USE_IMPLIED_VOL = True          # Use option-implied vol for σ_E (fallback: historical)
 IMPLIED_VOL_TARGET_TENOR = 1.0  # Target option tenor in years for implied vol
-RECOVERY_RATE = 0.4             # LGD = 1 - recovery (standard assumption)
+RECOVERY_RATE = 0.4             # ISDA standard senior-unsecured RR (Hull-White fallback)
+
+# VK / KMV
+EQUITY_RISK_PREMIUM = 0.02      # μ = r + ERP for VK physical-measure DD
+
+# Hull-White CDS bootstrap
+CDS_TENOR = 5.0                 # Tenor of the par-spread quote (years)
+CDS_PAYMENTS_PER_YEAR = 4       # Quarterly premium-leg accrual
+RR_LO = 0.05                    # Firm-specific RR clipping floor
+RR_HI = 0.95                    # Firm-specific RR clipping ceiling
 
 # ── Output ────────────────────────────────────────────────────
 OUTPUT_DIR = "output"

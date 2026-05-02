@@ -1,11 +1,18 @@
 """
 Vasicek-Kealhofer (KMV) structural credit risk model.
 
-Extends the Merton framework with two key modifications:
+Extends the Merton framework with three key modifications:
     1. Default point (DP) = short-term debt + 0.5 * long-term debt,
        rather than total debt.
     2. Iterative procedure to estimate asset value and volatility,
        rather than simultaneous nonlinear solve.
+    3. Distance to default uses the *physical* drift μ = r + ERP
+       (config.EQUITY_RISK_PREMIUM) instead of the risk-free rate.
+
+The σ_E input prefers OptionMetrics ATM implied volatility (forward-
+looking, ≈1-year ATM call) and falls back to 252-day historical
+volatility when implied vol is unavailable, matching the Merton runner.
+The source is recorded in ``vk_vol_source``.
 
 References:
     Crosbie, P. & Bohn, J. (2003). Modeling Default Risk. Moody's KMV.
@@ -194,14 +201,21 @@ def run_vk(panel_df: pd.DataFrame) -> pd.DataFrame:
         - risk_free_rate  : annualised risk-free rate (r)
 
     The drift parameter *mu* is set to the risk-free rate plus a small
-    equity-risk premium (2 %).  This is a standard practical choice when
-    firm-specific expected returns are unavailable.
+    equity-risk premium (``config.EQUITY_RISK_PREMIUM``, 2 % by default).
+    This is a standard practical choice when firm-specific expected
+    returns are unavailable.
+
+    σ_E selection (in priority order, matches the Merton runner):
+        1. ``impl_volatility`` — OptionMetrics ATM implied vol.
+        2. ``equity_vol``      — 252-day historical vol fallback.
 
     New columns added:
-        - vk_V       : estimated asset value
-        - vk_sigma_V : estimated asset volatility
-        - vk_DD      : distance to default
-        - vk_PD      : probability of default
+        - vk_V          : estimated asset value
+        - vk_sigma_V    : estimated asset volatility
+        - vk_sigma_E    : sigma_E actually used (implied or historical)
+        - vk_vol_source : 'implied' or 'historical'
+        - vk_DD         : distance to default
+        - vk_PD         : probability of default
 
     Parameters
     ----------
@@ -214,21 +228,33 @@ def run_vk(panel_df: pd.DataFrame) -> pd.DataFrame:
         Input DataFrame augmented with VK model outputs.
     """
     T = config.T
-    EQUITY_RISK_PREMIUM = 0.02  # small premium over r
 
-    results = {
-        "vk_V": [],
-        "vk_sigma_V": [],
-        "vk_DD": [],
-        "vk_PD": [],
+    results: dict[str, list] = {
+        "vk_V":          [],
+        "vk_sigma_V":    [],
+        "vk_sigma_E":    [],
+        "vk_vol_source": [],
+        "vk_DD":         [],
+        "vk_PD":         [],
     }
 
     for idx, row in panel_df.iterrows():
         try:
-            E = float(row["market_cap"])
-            sigma_E = float(row["equity_vol"])
+            E  = float(row["market_cap"])
             dp = float(row["default_point"])
-            r = float(row["risk_free_rate"])
+            r  = float(row["risk_free_rate"])
+
+            # σ_E selection — same priority as Merton
+            impl_vol = row.get("impl_volatility")
+            hist_vol = row.get("equity_vol")
+            if impl_vol is not None and not (
+                isinstance(impl_vol, float) and np.isnan(impl_vol)
+            ):
+                sigma_E    = float(impl_vol)
+                vol_source = "implied"
+            else:
+                sigma_E    = float(hist_vol)
+                vol_source = "historical"
 
             # Fallback: use total_debt when default_point is missing
             if np.isnan(dp):
@@ -242,12 +268,14 @@ def run_vk(panel_df: pd.DataFrame) -> pd.DataFrame:
             if V <= 0 or sigma_V <= 0:
                 raise ValueError("Iteration returned non-positive value")
 
-            mu = r + EQUITY_RISK_PREMIUM
+            mu = r + config.EQUITY_RISK_PREMIUM
             dd = vk_dd(V, sigma_V, dp, mu, T)
             pd_val = vk_pd(dd)
 
             results["vk_V"].append(V)
             results["vk_sigma_V"].append(sigma_V)
+            results["vk_sigma_E"].append(sigma_E)
+            results["vk_vol_source"].append(vol_source)
             results["vk_DD"].append(dd)
             results["vk_PD"].append(pd_val)
 
@@ -255,6 +283,8 @@ def run_vk(panel_df: pd.DataFrame) -> pd.DataFrame:
             logger.warning("VK model failed for row %s: %s", idx, exc)
             results["vk_V"].append(np.nan)
             results["vk_sigma_V"].append(np.nan)
+            results["vk_sigma_E"].append(np.nan)
+            results["vk_vol_source"].append("failed")
             results["vk_DD"].append(np.nan)
             results["vk_PD"].append(np.nan)
 

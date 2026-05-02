@@ -6,12 +6,10 @@ unobservable asset value (V) and asset volatility (sigma_V) from
 observable equity value and equity volatility using two simultaneous
 nonlinear equations.
 
-Key improvement over v1
------------------------
-sigma_E input now uses implied volatility (from OptionMetrics) where
-available, falling back to 252-day historical volatility otherwise.
-The source of sigma_E is recorded in the ``merton_vol_source`` column
-for transparency and robustness analysis.
+The σ_E input prefers OptionMetrics ATM implied volatility (forward-
+looking, ≈1-year ATM call) and falls back to 252-day historical
+volatility when implied vol is unavailable. The source is recorded in
+``merton_vol_source`` for traceability (Bharath & Shumway, 2008).
 
 References:
     Merton, R. C. (1974). On the pricing of corporate debt: The risk

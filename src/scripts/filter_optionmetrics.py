@@ -8,8 +8,8 @@ Usage:
     python scripts/filter_optionmetrics.py  <zip_or_csv_path>  <output_csv_path>
 
 Examples:
-    python scripts/filter_optionmetrics.py  ~/Downloads/opprcd_2021.zip  data/iv_2021.csv
-    python scripts/filter_optionmetrics.py  ~/Downloads/2025.csv         data/iv_2025.csv
+    python scripts/filter_optionmetrics.py  ~/Downloads/opprcd_2021.zip  data_raw/iv_2021.csv
+    python scripts/filter_optionmetrics.py  ~/Downloads/2025.csv         data_raw/iv_2025.csv
 
 After all 5 members finish, combine the outputs:
     python scripts/filter_optionmetrics.py --merge
@@ -249,8 +249,8 @@ def pick_best_rows(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def merge_all():
-    """Merge iv_2021.csv ~ iv_2025.csv into data/implied_vol_optionmetrics.csv."""
-    data_dir = os.path.join(os.path.dirname(__file__), "..", "data")
+    """Merge iv_2021.csv ~ iv_2025.csv into data_raw/implied_vol_optionmetrics.csv."""
+    data_dir = os.path.join(os.path.dirname(__file__), "..", "..", "data_raw")
     frames = []
     for year in range(2021, 2026):
         path = os.path.join(data_dir, f"iv_{year}.csv")
@@ -262,7 +262,7 @@ def merge_all():
             print(f"  Not found: {path} (skipping)")
 
     if not frames:
-        print("ERROR: No iv_YYYY.csv files found in data/")
+        print("ERROR: No iv_YYYY.csv files found in data_raw/")
         sys.exit(1)
 
     merged = pd.concat(frames, ignore_index=True)
@@ -290,8 +290,8 @@ def main():
         print("  python scripts/filter_optionmetrics.py --merge")
         print()
         print("Examples:")
-        print("  python scripts/filter_optionmetrics.py ~/Downloads/opprcd_2021.zip data/iv_2021.csv")
-        print("  python scripts/filter_optionmetrics.py ~/Downloads/2025.csv        data/iv_2025.csv")
+        print("  python scripts/filter_optionmetrics.py ~/Downloads/opprcd_2021.zip data_raw/iv_2021.csv")
+        print("  python scripts/filter_optionmetrics.py ~/Downloads/2025.csv        data_raw/iv_2025.csv")
         print()
         print("After all members finish, run:")
         print("  python scripts/filter_optionmetrics.py --merge")

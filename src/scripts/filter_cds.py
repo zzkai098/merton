@@ -12,7 +12,7 @@ Usage:
         - 2025(1).zip
 
 Output:
-    data/cds_parspread.csv  — one row per ticker-year, ~815 rows
+    data_raw/cds_parspread.csv  — one row per ticker-year, ~815 rows
 
 Filtering logic:
     1. Keep only 163 target tickers
@@ -40,7 +40,7 @@ ZIP_PATHS = [
 ]
 
 # ── Output path ──
-OUTPUT_PATH = "data/cds_parspread.csv"
+OUTPUT_PATH = "data_raw/cds_parspread.csv"
 
 # ── Target years ──
 TARGET_YEARS = {2021, 2022, 2023, 2024, 2025}
