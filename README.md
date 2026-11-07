@@ -150,8 +150,6 @@ PYTHONPATH=src python -c "from data import build_panel; build_panel()"
 
 Each script's docstring states its full filtering chain (year-end dates, 5Y/SNRFOR/USD for CDS; ATM ~1Y calls with valid IV and nonzero liquidity for OptionMetrics).
 
-> **Note on committed outputs.** `output/panel_data.csv`, `output/panel_full_results.csv`, and `output/cds_calibration/panel_cds_calibration.csv` carry vendor-derived values in their `equity_vol` / `*_sigma_E` and `parspread` / `dp` / `avrating` / `impliedrating` columns. Redistribution terms for these should be confirmed before the repository is made public.
-
 ---
 
 ## Models
