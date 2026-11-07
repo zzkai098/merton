@@ -74,7 +74,7 @@ Task C — benchmarked against actual agency ratings (AAA = 1 to D = 22), using 
   <br><em>Model-implied vs CDS-implied hazard. Merton and VK sit well off the 45° line; Hull-White lies on it by construction.</em>
 </p>
 
-All figures above are produced by `notebooks/main.ipynb`. The reported statistics follow the [final report PDF](docs/Grp03_mf728_report.pdf), which is the citable version of record; the CSVs in `output/` and `output/cds_calibration/` come from a later re-run of the same pipeline and differ in the last reported digit (and by one firm-year in the matched CDS subset).
+All figures above are produced by `notebooks/main.ipynb`; the reported statistics follow the [final report PDF](docs/Grp03_mf728_report.pdf). Raw model outputs are in `output/` and `output/cds_calibration/`.
 
 ---
 
