@@ -2,6 +2,8 @@
 name = "merton-credit-risk"
 version = "0.1.0"
 description = "Comparing Structural and Reduced-Form Credit Risk Models: Merton, VK, and Hull-White"
+readme = "README.md"
+license = { text = "MIT" }
 requires-python = ">=3.10"
 dependencies = [
     "numpy>=1.24",
