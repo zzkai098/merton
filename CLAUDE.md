@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Credit risk model comparison: Merton (1974) structural, Vasicek-Kealhofer (VK/KMV) structural, and Hull-White (2000) reduced-form intensity. The Hull-White hazard is bootstrapped directly from 5Y Markit CDS par spreads (not a logistic-regression proxy), with seniority-weighted firm-specific recovery rate (Altman & Kishore, 1996). Two evaluations on a 2021–2025 U.S. listed-firm panel: (i) structural discrimination on a 163-firm labelled panel (659 firm-years, 21 distressed) scored by ROC-AUC / CAP-AR; (ii) CDS market calibration on an 84-firm IG subset (398 firm-years) using λ_market and EL benchmarks, plus walk-forward linear calibration (Task A-2), cross-sectional Spearman vs CDS hazard (Task B), and Spearman vs agency ratings (Task C). The canonical deliverable is `report/Grp03_mf728_report.pdf`.
+Credit risk model comparison: Merton (1974) structural, Vasicek-Kealhofer (VK/KMV) structural, and Hull-White (2000) reduced-form intensity. The Hull-White hazard is bootstrapped directly from 5Y Markit CDS par spreads (not a logistic-regression proxy), with seniority-weighted firm-specific recovery rate (Altman & Kishore, 1996). Two evaluations on a 2021–2025 U.S. listed-firm panel: (i) structural discrimination on a 163-firm labelled panel (661 firm-years, 21 distressed firms / 67 distressed firm-years) scored by ROC-AUC / CAP-AR; (ii) CDS market calibration on the Markit IG extract (84 firms / 398 firm-years, of which 83 firms / 314 firm-years merge onto the structural panel) using λ_market and EL benchmarks, plus walk-forward linear calibration (Task A-2), cross-sectional Spearman vs CDS hazard (Task B), and Spearman vs agency ratings (Task C). The canonical deliverable is `docs/Grp03_mf728_report.pdf`.
 
 ## Commands
 
@@ -47,12 +47,12 @@ src/                       — Python package (added to sys.path by the notebook
   scripts/                 — One-off raw-data preprocessing
     filter_cds.py          — Markit CDS dump → data_raw/cds_parspread.csv
     filter_optionmetrics.py — OptionMetrics opprcd → data_raw/iv_YYYY.csv → merge
-data_raw/                  — Filtered raw inputs (CDS spreads, OptionMetrics IV)
+data_raw/                  — Licensed WRDS inputs: gitignored, NOT redistributable
 notebooks/main.ipynb       — End-to-end analysis pipeline
 output/                    — Generated CSV files and PNG charts
   cds_calibration/         — Task A/B/C outputs (level matching, rank, rating benchmark)
-docs/                      — Project proposal and reference PDFs
-report/                    — Slides and written report (gitignored)
+docs/                      — Final report PDF and project proposal
+report/                    — Slide sources and drafts (gitignored)
 ```
 
 ## Key Conventions
@@ -61,9 +61,9 @@ report/                    — Slides and written report (gitignored)
 - Each model's `run_*()` function takes a panel DataFrame and returns it with added columns (e.g., `merton_DD`, `merton_PD`, `hw_lambda`)
 - Default label: `default_label` column (1 = distressed, 0 = non-default)
 - Model output columns follow pattern: `{model}_{metric}` (e.g., `vk_DD`, `hw_PD_5Y`)
-- Raw inputs live in `data_raw/`; merged panel in `output/panel_data.csv`; analysis outputs in `output/` and `output/cds_calibration/`
+- Raw inputs live in `data_raw/` (gitignored: licensed Markit/OptionMetrics data, not redistributable); merged panel in `output/panel_data.csv`; analysis outputs in `output/` and `output/cds_calibration/`
 
 ## Setup Required
 
 1. Set `FRED_API_KEY` as an environment variable (only needed when rebuilding the risk-free series). If unset, the system auto-falls back to yfinance `^TNX`.
-2. Place filtered raw inputs in `data_raw/` (`cds_parspread.csv`, `implied_vol_optionmetrics.csv`). The notebook does not regenerate these.
+2. Place filtered raw inputs in `data_raw/` (`cds_parspread.csv`, `implied_vol_optionmetrics.csv`). These are licensed WRDS extracts and are not in version control; regenerate them with `src/scripts/` (schema documented in README). The notebook needs only `cds_parspread.csv` at run time, plus the cached `output/panel_data.csv`.
