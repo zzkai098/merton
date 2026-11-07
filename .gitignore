@@ -20,5 +20,10 @@ venv/
 # Local memo
 memory/
 
-# Report drafts (delivered separately, not version-controlled)
+# Report drafts and slide sources (final PDF is published at docs/)
 report/
+
+# Licensed WRDS data — NOT redistributable (see README "Licensed data")
+# Markit CDS par spreads and OptionMetrics Ivy DB implied volatility.
+# Regenerate locally with src/scripts/ given a WRDS subscription.
+data_raw/*.csv
